@@ -4,10 +4,11 @@ require 'json'
 
 module RedmineCLI
   class Task < Thor
+    class_option :msg, :type => :string, :aliases => "-m", :desc => 'Commit message.'
+    class_option :all, :type => :boolean, :aliases => "-a", :desc => 'Passes -a to git commit.'
+
     desc 'commit <search> [-a] [-m <msg>] [--prefix=<prefix>]', 'Search for issue and commit with ref.'
-    method_option :msg, :type => :string, :aliases => "-m", :desc => 'Commit message.'
     method_option :prefix, :type => :string, :default => 'refs', :desc => 'Prefix like "refs" or "closes" for commit message.'
-    method_option :all, :type => :boolean, :aliases => "-a", :desc => 'Passes -a to git commit.'
     def commit(term)
       url = URI.parse("https://redmine.codevise.de/projects/#{project_name}/issues.json?key=#{api_key}")
 
@@ -41,6 +42,13 @@ module RedmineCLI
     end
 
     map 'ci' => :commit
+
+    ['fixes', 'closes', 'refs'].each do |method|
+      desc "#{method} <search> [-a] [-m <msg>]", "Search for issue and commit with #{method}."
+      define_method method do |*args|
+        invoke RedmineCLI::Task, :commit, args, options.merge(:prefix => method)
+      end
+    end
 
     private
 
