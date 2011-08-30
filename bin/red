@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH << File.expand_path('../../lib/', __FILE__)
+
+require 'rubygems'
+require 'thor'
+
+require 'redmine_cli/task'
+
+RedmineCLI::Task.start
