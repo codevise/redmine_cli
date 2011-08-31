@@ -10,15 +10,7 @@ module RedmineCLI
     desc 'commit <search> [-a] [-m <msg>] [--prefix=<prefix>]', 'Search for issue and commit with ref.'
     method_option :prefix, :type => :string, :default => 'refs', :desc => 'Prefix like "refs" or "closes" for commit message.'
     def commit(term)
-      url = URI.parse("https://redmine.codevise.de/projects/#{project_name}/issues.json?key=#{api_key}")
-
-      http = Net::HTTP.new(url.host, url.port)
-      http.use_ssl = true
-
-      request = Net::HTTP::Get.new("#{url.path}?#{url.query}")
-      response = http.start { |http| http.request(request) }
-
-      matching = JSON.parse(response.body)["issues"].find_all do |issue|
+      matching = fetch_issues.find_all do |issue|
         issue['subject'] =~ /#{term}/i
       end
 
@@ -51,6 +43,32 @@ module RedmineCLI
     end
 
     private
+
+    def fetch_issues
+      issues, totalCount, page = [], 0, 1
+
+      begin
+        url = URI.parse(url_for(99, page))
+
+        http = Net::HTTP.new(url.host, url.port)
+        http.use_ssl = true
+
+        request = Net::HTTP::Get.new("#{url.path}?#{url.query}")
+        response = http.start { |http| http.request(request) }
+        data = JSON.parse(response.body);
+
+        totalCount = data["total_count"].to_i
+        issues.concat(data["issues"])
+
+        page += 1
+      end until issues.length == totalCount
+
+      issues
+    end
+
+    def url_for(limit, page)
+      "https://redmine.codevise.de/projects/#{project_name}/issues.json?key=#{api_key}&limit=#{limit}&page=#{page}"
+    end
 
     def project_name
       `git config redmine.project`.strip
