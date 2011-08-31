@@ -61,7 +61,7 @@ module RedmineCLI
         issues.concat(data["issues"])
 
         page += 1
-      end until issues.length == totalCount
+      end until issues.length == totalCount || data["issues"].empty?
 
       issues
     end
