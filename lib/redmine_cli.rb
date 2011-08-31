@@ -1,1 +1,2 @@
-require 'redmine_cli/task'
+require 'redmine_cli/tasks'
+require 'redmine_cli/cli'

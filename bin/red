@@ -4,7 +4,13 @@ $LOAD_PATH << File.expand_path('../../lib/', __FILE__)
 
 require 'rubygems'
 require 'thor'
+require 'thor/runner'
 
-require 'redmine_cli/task'
+require 'redmine_cli'
 
-RedmineCLI::Task.start
+begin
+  RedmineCLI::CLI.start
+rescue Interrupt => e
+  puts "\nQuitting..."
+  exit 1
+end
