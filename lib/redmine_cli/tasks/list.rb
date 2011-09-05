@@ -1,62 +1,37 @@
 
-require 'net/http'
-require 'net/https'
-require 'json'
-
 module RedmineCLI
   module Tasks
     class List < Base
       namespace :list
 
-      desc "open [term]", "List of all open tickets matching search"
-      def open(term = "")
-        matching = fetch_issues.find_all do |issue|
-          issue['subject'] =~ /#{term}/i
-        end
+      class_option :assigned_to_me, :type => :boolean, :aliases => "-I", :desc => "Only show issues that are assigned to me."
 
-        if matching.any?
-          matching.each_with_index do |issue, index|
-            puts "##{issue['id']} - #{issue['subject']}"
-          end
-        else
-          puts "No matches."
+      ['open', 'closed'].each do |status|
+        desc "#{status} [term]", "List of all #{status} tickets matching search"
+        define_method status do |*args|
+          list(status, args.first, options)
         end
       end
 
       private
 
-      def fetch_issues
-        issues, totalCount, page = [], 0, 1
+      def list(method, term, options)
+        query = Query.new.send method
+        query = query.subject(term) unless term.nil? or term.empty?
+        query = query.assigned_to_me if options.assigned_to_me?
+        matching  = query.all
 
-        begin
-          url = URI.parse(url_for(99, page))
-
-          http = Net::HTTP.new(url.host, url.port)
-          http.use_ssl = true
-
-          request = Net::HTTP::Get.new("#{url.path}?#{url.query}")
-          response = http.start { |http| http.request(request) }
-          data = JSON.parse(response.body);
-
-          totalCount = data["total_count"].to_i
-          issues.concat(data["issues"])
-
-          page += 1
-        end until issues.length == totalCount || data["issues"].empty?
-
-        issues
+        print(matching)
       end
 
-      def url_for(limit, page)
-        "https://redmine.codevise.de/projects/#{project_name}/issues.json?key=#{api_key}&limit=#{limit}&page=#{page}"
-      end
-
-      def project_name
-        `git config redmine.project`.strip
-      end
-
-      def api_key
-        `git config redmine.apikey`.strip
+      def print(issues)
+        if issues.any?
+          issues.each_with_index do |issue, index|
+            puts "##{issue['id']} - #{issue['subject']}"
+          end
+        else
+          puts "No matches."
+        end
       end
     end
   end

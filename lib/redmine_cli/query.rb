@@ -1,0 +1,90 @@
+
+require 'uri'
+require 'net/http'
+require 'net/https'
+require 'json'
+
+module RedmineCLI
+  class Query
+
+    attr_reader :filters
+
+    def initialize(query = nil)
+      @filters = if query.nil?
+                   []
+                 else
+                   query.filters.clone
+                 end
+    end
+
+    def add_filter(field, operator, values)
+      filters << {:field => field, :operator => operator, :values => (values.is_a?(Array) ? values : [values])}
+      self
+    end
+
+    def execute
+      issues, totalCount, page = [], 0, 1
+
+      begin
+        url = URI.parse(url_for(99, page))
+
+        http = Net::HTTP.new(url.host, url.port)
+        http.use_ssl = true
+
+        request = Net::HTTP::Get.new("#{url.path}?#{url.query}")
+        response = http.start { |http| http.request(request) }
+        data = JSON.parse(response.body);
+
+        totalCount = data["total_count"].to_i
+        issues.concat(data["issues"])
+
+        page += 1
+      end until issues.length == totalCount || data["issues"].empty?
+
+      issues
+    end
+    alias :all :execute
+
+    [{:name => 'open', :operator => 'o'}, {:name => 'closed', :operator => 'c'}].each do |query|
+      define_method query[:name] do
+        Query.new(self).add_filter('status_id', query[:operator], 1)
+      end
+    end
+
+    def subject(*values)
+      Query.new(self).add_filter('subject', '~', values)
+    end
+
+    def assigned_to_me
+      Query.new(self).add_filter('assigned_to_id', '=', 'me')
+    end
+
+    private
+
+    def url_for(limit, page)
+      "#{base_url}/projects/#{project_name}/issues.json?key=#{api_key}&limit=#{limit}&page=#{page}&#{query}"
+    end
+
+    def query
+      parts = filters.collect do |filter|
+        values = filter[:values].collect { |v| "values[#{filter[:field]}][]=#{URI.escape(v.to_s)}" }
+        "fields[]=#{filter[:field]}&operators[#{filter[:field]}]=#{filter[:operator]}&#{values.join('&')}"
+      end
+
+      parts.join('&')
+    end
+
+    def base_url
+      `git config redmine.url`.strip
+    end
+
+    def project_name
+      `git config redmine.project`.strip
+    end
+
+    def api_key
+      `git config redmine.apikey`.strip
+    end
+
+  end
+end
