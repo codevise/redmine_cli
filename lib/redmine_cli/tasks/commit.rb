@@ -9,20 +9,21 @@ module RedmineCLI
 
       class_option :msg, :type => :string, :aliases => "-m", :desc => 'Commit message.'
       class_option :all, :type => :boolean, :aliases => "-a", :desc => 'Passes -a to git commit.'
+      class_option :closed_tickets, :type => :boolean, :aliases => "-C", :desc => 'Only search for closed tickets.'
+      class_option :all_tickets, :type => :boolean, :aliases => "-A", :desc => 'Include all tickets into search.'
+      class_option :assigned_to_me, :type => :boolean, :aliases => "-I", :desc => "Only show issues that are assigned to me."
 
       ['fixes', 'closes', 'refs'].each do |method|
-        desc "#{method} <search> [-a] [-m <msg>]", "Search for issue and commit with #{method}."
-        define_method method do |term|
-          commit(term, options.merge(:prefix => method))
+        desc "#{method} <search> [-a] [-m <msg>] [-A | -C] [-I]", "Search for issue and commit with #{method}."
+        define_method method do |*args|
+          commit(args.first, options.merge(:prefix => method))
         end
       end
 
       private
 
       def commit(term, options)
-        matching = fetch_issues.find_all do |issue|
-          issue['subject'] =~ /#{term}/i
-        end
+        matching = fetch_issues(term, options)
 
         if matching.any?
           matching.each_with_index do |issue, index|
@@ -43,39 +44,17 @@ module RedmineCLI
         end
       end
 
-      def fetch_issues
-        issues, totalCount, page = [], 0, 1
+      def fetch_issues(term, options)
+        query = Query.new
 
-        begin
-          url = URI.parse(url_for(99, page))
+        query = query.closed if not options.all_tickets and options.closed_tickets
+        query = query.assigned_to_me if options.assigned_to_me?
+        query = query.open unless options.all_tickets or options.closed_tickets
+        query = query.subject(term) unless term.nil? or term.empty?
 
-          http = Net::HTTP.new(url.host, url.port)
-          http.use_ssl = true
-
-          request = Net::HTTP::Get.new("#{url.path}?#{url.query}")
-          response = http.start { |http| http.request(request) }
-          data = JSON.parse(response.body);
-
-          totalCount = data["total_count"].to_i
-          issues.concat(data["issues"])
-
-          page += 1
-        end until issues.length == totalCount || data["issues"].empty?
-
-        issues
+        query.all
       end
 
-      def url_for(limit, page)
-        "https://redmine.codevise.de/projects/#{project_name}/issues.json?key=#{api_key}&limit=#{limit}&page=#{page}"
-      end
-
-      def project_name
-        `git config redmine.project`.strip
-      end
-
-      def api_key
-        `git config redmine.apikey`.strip
-      end
     end
   end
 end

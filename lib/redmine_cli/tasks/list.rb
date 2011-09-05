@@ -7,7 +7,7 @@ module RedmineCLI
       class_option :assigned_to_me, :type => :boolean, :aliases => "-I", :desc => "Only show issues that are assigned to me."
 
       ['open', 'closed'].each do |status|
-        desc "#{status} [term]", "List of all #{status} tickets matching search"
+        desc "#{status} [term] [-I]", "List of all #{status} tickets matching search"
         define_method status do |*args|
           list(status, args.first, options)
         end
