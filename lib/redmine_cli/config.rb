@@ -16,15 +16,7 @@ module RedmineCLI
       end
 
       def api_key
-        get_with_fallback(:api_key, :apikey)
-      end
-
-      private
-
-      def get_with_fallback(key, fallback_key)
-        value = get(key)
-        return get(fallback_key) if value.nil? or value.empty?
-        value
+        get(:apikey)
       end
 
     end
