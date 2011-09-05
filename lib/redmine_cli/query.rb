@@ -28,8 +28,6 @@ module RedmineCLI
       begin
         url = URI.parse(url_for(99, page))
 
-        puts url_for(99, 1)
-
         http = Net::HTTP.new(url.host, url.port)
         http.use_ssl = true
 
@@ -64,7 +62,7 @@ module RedmineCLI
     private
 
     def url_for(limit, page)
-      "#{Config.url}/projects/#{Config.project_name}/issues.json?key=#{Config.api_key}&limit=#{limit}&page=#{page}&#{query}"
+      "#{Config.url}/projects/#{Config.project}/issues.json?key=#{Config.api_key}&limit=#{limit}&page=#{page}&#{query}"
     end
 
     def query
