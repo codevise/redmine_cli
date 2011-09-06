@@ -4,7 +4,9 @@ module RedmineCLI
     class << self
 
       def get(key)
-        `git config redmine.#{key.to_s}`.strip
+        value = `git config redmine.#{key.to_s}`.strip
+        raise Thor::Error, "Config key 'redmine.#{key.to_s}' not found! (e.g. `git config redmine.#{key.to_s} VALUE`)" if value.empty?
+        value
       end
 
       def url
