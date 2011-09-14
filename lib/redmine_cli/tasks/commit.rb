@@ -25,22 +25,10 @@ module RedmineCLI
       def commit(term, options)
         matching = fetch_issues(term, options)
 
-        if matching.any?
-          matching.each_with_index do |issue, index|
-            puts "(#{index}) ##{issue['id']} - #{issue['subject']}"
-          end
-
-          STDOUT.write "> "
-          answer = STDIN.gets.strip
-          issue = matching[answer.to_i]
-
-          if !answer.empty? && issue && answer != 'q'
-            exec %`git commit -m "#{options[:prefix]} ##{issue['id']}: #{options[:msg]}" #{options[:msg] ? '' : '-e'} #{options[:all] ? '-a' : ''}`
-          else
-            puts "Bye."
-          end
+        if issue = RedmineCLI.ui.choose_issue(matching)
+          exec %`git commit -m "#{options[:prefix]} ##{issue['id']}: #{options[:msg]}" #{options[:msg] ? '' : '-e'} #{options[:all] ? '-a' : ''}`
         else
-          puts "No matches."
+          puts "Bye."
         end
       end
 

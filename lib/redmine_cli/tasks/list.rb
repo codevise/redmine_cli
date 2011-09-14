@@ -1,4 +1,3 @@
-
 module RedmineCLI
   module Tasks
     class List < Base
@@ -13,6 +12,20 @@ module RedmineCLI
         end
       end
 
+      desc "sub ID [-A | -C] [-I]", "List sub tickets"
+      option :closed_tickets, :type => :boolean, :aliases => "-C", :desc => 'Only search for closed tickets.'
+      option :all_tickets, :type => :boolean, :aliases => "-A", :desc => 'Include all tickets into search.'
+      option :assigned_to_me, :type => :boolean, :aliases => "-I", :desc => "Only show issues that are assigned to me."
+      def sub(issue_id)
+        query = Query.new
+        query = query.closed if not options.all_tickets and options.closed_tickets
+        query = query.open if !options.all_tickets and !options.closed_tickets
+        query = query.assigned_to_me if options.assigned_to_me?
+        matching = Filter.new(query.all).with_parent_id(issue_id).all
+
+        RedmineCLI.ui.list_issues(matching)
+      end
+
       private
 
       def list(method, term, options)
@@ -21,17 +34,7 @@ module RedmineCLI
         query = query.assigned_to_me if options.assigned_to_me?
         matching  = query.all
 
-        print(matching)
-      end
-
-      def print(issues)
-        if issues.any?
-          issues.each_with_index do |issue, index|
-            puts "##{issue['id']} - #{issue['subject']}"
-          end
-        else
-          puts "No matches."
-        end
+        RedmineCLI.ui.list_issues(matching)
       end
     end
   end
