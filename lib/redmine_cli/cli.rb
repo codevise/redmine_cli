@@ -7,5 +7,13 @@ module RedmineCLI
 
     map 'cm' => :commit
     map 'ci' => :commit
+
+    desc 'version', 'Show redmine_cli version.', :hide => true
+    def version
+      puts RedmineCLI::VERSION
+    end
+
+    map '-v' => :version
+    map '--version' => :version
   end
 end

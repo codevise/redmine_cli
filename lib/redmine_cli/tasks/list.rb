@@ -13,9 +13,9 @@ module RedmineCLI
       end
 
       desc "sub ID [-A | -C] [-I]", "List sub tickets"
-      option :closed_tickets, :type => :boolean, :aliases => "-C", :desc => 'Only search for closed tickets.'
-      option :all_tickets, :type => :boolean, :aliases => "-A", :desc => 'Include all tickets into search.'
-      option :assigned_to_me, :type => :boolean, :aliases => "-I", :desc => "Only show issues that are assigned to me."
+      method_option :closed_tickets, :type => :boolean, :aliases => "-C", :desc => 'Only search for closed tickets.'
+      method_option :all_tickets, :type => :boolean, :aliases => "-A", :desc => 'Include all tickets into search.'
+      method_option :assigned_to_me, :type => :boolean, :aliases => "-I", :desc => "Only show issues that are assigned to me."
       def sub(issue_id)
         query = Query.new
         query = query.closed if not options.all_tickets and options.closed_tickets
