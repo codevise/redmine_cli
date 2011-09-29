@@ -16,11 +16,13 @@ module RedmineCLI
           puts "(#{index}) ##{issue['id']} - #{issue['subject']}"
         end
 
-        STDOUT.write "> "
+        STDOUT.write "Choose issue (Default: 0)> "
         answer = STDIN.gets.strip
 
-        if answer.empty? || answer == 'q'
+        if answer == 'q'
           nil
+        elsif answer.empty?
+          issues.first
         else
           issues[answer.to_i]
         end
