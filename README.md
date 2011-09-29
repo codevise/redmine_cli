@@ -18,9 +18,13 @@ Redmine CLI uses git config as configuration backend. You have to set some git c
       redmine list [COMMAND]    # List issues.
       redmine show [COMMAND]    # Show issue information.
       redmine time [COMMAND]    # Worktime management.
+
 Use the built in documentation mechanism, i.e.
+
     $ redmine help list
+
 and
+
     $ redmine list help open
 
 ## License
