@@ -29,7 +29,7 @@ module RedmineCLI
         url = URI.parse(url_for(99, page))
 
         http = Net::HTTP.new(url.host, url.port)
-        http.use_ssl = true
+        http.use_ssl = url.scheme == "https"
 
         request = Net::HTTP::Get.new("#{url.path}?#{url.query}")
         response = http.start { |http| http.request(request) }
