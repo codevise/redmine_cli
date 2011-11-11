@@ -8,6 +8,7 @@ module RedmineCLI
   class Query
 
     attr_reader :filters
+    attr_accessor :project
 
     def initialize(query = nil)
       @filters = if query.nil?
@@ -15,6 +16,7 @@ module RedmineCLI
                  else
                    query.filters.clone
                  end
+      @project = query.project if query
     end
 
     def add_filter(field, operator, values)
@@ -55,6 +57,11 @@ module RedmineCLI
       Query.new(self).add_filter('subject', '~', values)
     end
 
+    def default_project
+      @project = Config.project
+      self
+    end
+
     def assigned_to_me
       Query.new(self).add_filter('assigned_to_id', '=', 'me')
     end
@@ -62,7 +69,16 @@ module RedmineCLI
     private
 
     def url_for(limit, page)
-      "#{Config.url}/projects/#{Config.project}/issues.json?key=#{Config.api_key}&limit=#{limit}&page=#{page}&#{query}"
+      "#{Config.url}#{resource}?key=#{Config.api_key}&limit=#{limit}&page=#{page}&#{query}"
+    end
+
+    def resource
+      prefix = if @project
+                 "/projects/#{@project}"
+               else
+                 ""
+               end
+      prefix + "/issues.json"
     end
 
     def query

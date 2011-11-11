@@ -12,6 +12,9 @@ module RedmineCLI
       class_option :closed_tickets, :type => :boolean, :aliases => "-C", :desc => 'Only search for closed tickets.'
       class_option :all_tickets, :type => :boolean, :aliases => "-A", :desc => 'Include all tickets into search.'
       class_option :assigned_to_me, :type => :boolean, :aliases => "-I", :desc => "Only show issues that are assigned to me."
+      class_option :global_search, :type => :boolean, :aliases => "-G", :desc => "Perform a global search."
+      class_option :project_id, :type => :string, :aliases => "-P", :desc => "Search in the project with the given id."
+
 
       ['fixes', 'closes', 'refs'].each do |method|
         desc "#{method} <search> [-a] [-m <msg>] [-A | -C] [-I]", "Search for issue and commit with #{method}."
@@ -34,6 +37,9 @@ module RedmineCLI
 
       def fetch_issues(term, options)
         query = Query.new
+
+        query.project = options.project_id if !options.global_search? && options.project_id
+        query.default_project if !options.global_search? && !options.project_id
 
         query = query.closed if not options.all_tickets and options.closed_tickets
         query = query.assigned_to_me if options.assigned_to_me?

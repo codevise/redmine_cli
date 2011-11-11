@@ -2,8 +2,7 @@
 require 'rubygems'
 require 'sinatra'
 
-get '/projects/test/issues.json' do
-  <<JSON
+response =   <<JSON
   {
     "issues": [ {
       "created_on":"2011/09/06 13:16:43 +0200",
@@ -47,4 +46,11 @@ get '/projects/test/issues.json' do
     "offset":0
   }
 JSON
+
+get '/projects/test/issues.json' do
+  response
+end
+
+get '/issues.json' do
+  response
 end
