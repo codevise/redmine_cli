@@ -17,6 +17,7 @@ module RedmineCLI
       ['fixes', 'closes', 'refs'].each do |method|
         desc "#{method} <search> [-a] [-m <msg>] #{options_description_for_query}", "Search for issue and commit with #{method}."
         define_method method do |*args|
+          debugger
           commit(args.first, options.merge(:prefix => method))
         end
       end
@@ -34,7 +35,9 @@ module RedmineCLI
       end
 
       def fetch_issues(term, options)
-        create_query_for(extract_query_parameters(options).merge(:term => term)).all
+        puts options.inspect
+        puts extract_query_parameters(options).merge!(:term => term).inspect
+        create_query_for(extract_query_parameters(options).merge({:term => term})).all
       end
 
     end

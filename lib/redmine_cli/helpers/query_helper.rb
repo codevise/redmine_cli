@@ -44,7 +44,7 @@ module RedmineCLI
         params = {};
 
         params[:status] = :open
-        params[:status] = :closed_option if options.closed_tickets? && !options.all_tickets
+        params[:status] = :closed if options.closed_tickets? && !options.all_tickets
         params[:status] = :all if options.all_tickets?
 
         params[:assigned_to_me] = options.assigned_to_me?
@@ -67,8 +67,9 @@ module RedmineCLI
       private
 
       def add_project(query, params)
-        query.project = options.project_id if !params[:global_search] && params[:project_id]
-        query.default_project if !params[:global_search] && params[:project_id]
+        return query if params[:global_search]
+        query.project = options.project_id if params[:project_id]
+        query.default_project unless params[:project_id]
         query
       end
 

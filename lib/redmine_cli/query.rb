@@ -28,6 +28,7 @@ module RedmineCLI
       issues, totalCount, page = [], 0, 1
 
       begin
+        puts url_for(99, page)
         url = URI.parse(url_for(99, page))
 
         http = Net::HTTP.new(url.host, url.port)
