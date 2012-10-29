@@ -15,6 +15,11 @@ module RedmineCLI
 
       ['fixes', 'closes', 'refs'].each do |method|
         desc "#{method} [<search>] [-a] [-m <msg>] [-A | -C] [-I]", "Search for issue and commit with #{method}."
+        long_desc <<-DOC
+          If <search> is present, the command displays a list of issues
+          with matching sujects.  If no <search> is given, the command
+          tries to determine the issue from the current worktime. 
+        DOC
         define_method method do |*args|
           commit(args.first, options.merge(:prefix => method))
         end
