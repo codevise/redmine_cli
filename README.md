@@ -11,13 +11,34 @@ Redmine CLI uses git config as configuration backend. You have to set some git c
     git config redmine.project my-project # ID of your project
 
 ## Usage
-    $ redmine
-    Tasks:
-      redmine commit [COMMAND]  # Commit with ticket ref.
-      redmine help [TASK]       # Describe available tasks or one specific task
-      redmine list [COMMAND]    # List issues.
-      redmine show [COMMAND]    # Show issue information.
-      redmine time [COMMAND]    # Worktime management.
+
+### Timevise
+
+Display current sign in status:
+
+    $ redmine time current
+
+Sign out:
+
+    $ redmine time out
+
+### Issues
+
+List open issues of current project:
+
+    $ redmine list open
+
+### Commiting
+
+Commit with ref to issue whose subject matches <term>:
+
+    $ redmine commit [refs|closes|fixes] <term> -m "<msg>"
+
+Commit with ref to issue you are currently signed in for:
+
+    $ redmine commit [refs|closes|fixes] -m "<msg>"
+
+### More Help
 
 Use the built in documentation mechanism, i.e.
 
