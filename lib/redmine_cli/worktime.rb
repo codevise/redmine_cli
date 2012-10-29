@@ -1,8 +1,11 @@
 module RedmineCLI
   class Worktime
-    attr_reader :issue_id, :issue_subject
+    attr_reader :issue_id, :issue_subject, :project_name
 
     def initialize(attributes)
+      @project_name = attributes['project']['name']
+      @project_identifier = attributes['project']['identifier']
+
       if attributes['issue']
         @issue_id = attributes['issue']['id']
         @issue_subject = attributes['issue']['subject']

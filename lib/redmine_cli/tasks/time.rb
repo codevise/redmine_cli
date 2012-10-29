@@ -27,9 +27,9 @@ module RedmineCLI
       def current
         if worktime = Worktime.current
           if worktime.issue?
-            puts "Signed in for ##{worktime.issue_id}: #{worktime.issue_subject}."
+            puts "Signed in for #{worktime.project_name} - ##{worktime.issue_id}: #{worktime.issue_subject}."
           else
-            puts "Signed in."
+            puts "Signed in for #{worktime.project_name}."
           end
         else
           puts "Not signed in."
