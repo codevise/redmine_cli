@@ -14,7 +14,7 @@ module RedmineCLI
       class_option :assigned_to_me, :type => :boolean, :aliases => "-I", :desc => "Only show issues that are assigned to me."
 
       ['fixes', 'closes', 'refs'].each do |method|
-        desc "#{method} <search> [-a] [-m <msg>] [-A | -C] [-I]", "Search for issue and commit with #{method}."
+        desc "#{method} [<search>] [-a] [-m <msg>] [-A | -C] [-I]", "Search for issue and commit with #{method}."
         define_method method do |*args|
           commit(args.first, options.merge(:prefix => method))
         end
@@ -23,13 +23,28 @@ module RedmineCLI
       private
 
       def commit(term, options)
-        matching = fetch_issues(term, options)
+        if term.nil?
+          worktime = Worktime.current
 
-        if issue = RedmineCLI.ui.choose_issue(matching)
-          exec %`git commit -m "#{options[:prefix]} ##{issue['id']}: #{options[:msg]}" #{options[:msg] ? '' : '-e'} #{options[:all] ? '-a' : ''}`
+          if worktime && worktime.issue?
+            issue = {
+              'id' => worktime.issue_id
+            }
+          else
+            puts "Cannot determine issue from worktime. Not signed in for any issue."
+            return
+          end
         else
-          puts "Bye."
+          matching = fetch_issues(term, options)
+          issue = RedmineCLI.ui.choose_issue(matching)
+
+          unless issue
+            puts "Bye."
+            return
+          end
         end
+
+        exec %`git commit -m "#{options[:prefix]} ##{issue['id']}: #{options[:msg]}" #{options[:msg] ? '' : '-e'} #{options[:all] ? '-a' : ''}`
       end
 
       def fetch_issues(term, options)
@@ -42,7 +57,6 @@ module RedmineCLI
 
         query.all
       end
-
     end
   end
 end
