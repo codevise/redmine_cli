@@ -16,10 +16,23 @@ module RedmineCLI
         request = Net::HTTP::Get.new("#{url.path}?#{url.query}")
         response = http.start { |http| http.request(request) }
 
-        if response.kind_of?(Net::HTTPSuccess)
+        if response.kind_of?(Net::HTTPFound)
           puts "Signed out."
         else
           puts "Error: " + response.class.name
+        end
+      end
+
+      desc "current", ""
+      def current
+        if worktime = Worktime.current
+          if worktime.issue?
+            puts "Signed in for ##{worktime.issue_id}: #{worktime.issue_subject}."
+          else
+            puts "Signed in."
+          end
+        else
+          puts "Not signed in."
         end
       end
 

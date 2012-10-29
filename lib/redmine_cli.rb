@@ -5,6 +5,7 @@ require 'redmine_cli/tasks'
 require 'redmine_cli/cli'
 require 'redmine_cli/ui'
 require 'redmine_cli/version'
+require 'redmine_cli/worktime'
 
 module RedmineCLI
   class << self
